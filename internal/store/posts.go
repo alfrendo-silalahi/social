@@ -68,3 +68,43 @@ func (s *PostsStore) GetByID(ctx context.Context, id int) (*Post, error) {
 
 	return &post, nil
 }
+
+func (s *PostsStore) GetAll(ctx context.Context) ([]Post, error) {
+	query := `
+		SELECT 
+			id,
+			content,
+			title,
+			user_id,
+			tags,
+			created_at,
+			updated_at
+		FROM posts
+	`
+
+	rows, err := s.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var posts []Post
+
+	for rows.Next() {
+		var post Post
+		if err := rows.Scan(
+			&post.ID,
+			&post.Content,
+			&post.Title,
+			&post.UserID,
+			&post.Tags,
+			&post.CreatedAt,
+			&post.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		posts = append(posts, post)
+	}
+
+	return posts, nil
+}
